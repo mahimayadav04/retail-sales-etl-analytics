@@ -2,8 +2,8 @@
 
 > A beginner-to-intermediate level, end-to-end Data Engineering and Business Intelligence project built with Python, PostgreSQL, and Streamlit.
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/)
-**[🚀 View Live Dashboard on Streamlit Community Cloud](https://share.streamlit.io/)**
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://retail-sales-data-platform.streamlit.app/)
+**[🚀 View Live Dashboard on Streamlit Community Cloud](https://retail-sales-data-platform.streamlit.app/)**
 
 ---
 
