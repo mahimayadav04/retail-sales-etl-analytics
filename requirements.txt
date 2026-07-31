@@ -17,3 +17,5 @@ python-dotenv   # Reads key=value pairs from a .env file into os.environ
 # Dashboard (Phase 10)
 streamlit       # Interactive web dashboard framework
 plotly          # Interactive chart library used with Streamlit
+statsmodels     # Required by Plotly for OLS trendline calculations
+scipy           # Dependency for statsmodels numerical routines

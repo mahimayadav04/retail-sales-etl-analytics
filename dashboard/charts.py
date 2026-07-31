@@ -349,14 +349,13 @@ def chart_profit_scatter(df: pd.DataFrame) -> go.Figure:
 def chart_discount_vs_margin(df: pd.DataFrame) -> go.Figure:
     """Scatter plot: discount vs profit margin to visualise discount erosion."""
     sample = df.sample(min(len(df), 2000), random_state=42)
-    fig = px.scatter(
-        sample,
+    
+    kwargs = dict(
         x="discount",
         y="profit_margin",
         color="category",
         color_discrete_sequence=PALETTE,
         opacity=0.55,
-        trendline="ols",
         labels={
             "discount": "Discount Rate",
             "profit_margin": "Profit Margin (%)",
@@ -364,4 +363,11 @@ def chart_discount_vs_margin(df: pd.DataFrame) -> go.Figure:
         },
         hover_data=["sub_category"],
     )
+
+    try:
+        import statsmodels.api  # noqa: F401
+        fig = px.scatter(sample, trendline="ols", **kwargs)
+    except Exception:
+        fig = px.scatter(sample, **kwargs)
+
     return _apply_layout(fig, "Discount Rate vs Profit Margin")
