@@ -1,16 +1,15 @@
 """
-database.py - Dashboard Database Layer (CSV Fallback Mode)
-============================================================
+database.py - Dashboard Database Layer (CSV & On-the-fly Transformation Fallback)
+===================================================================================
 Retail Sales ETL & Analytics Platform  |  Phase 10
 
 Primary mode  : Reads from PostgreSQL using credentials in .env
-Fallback mode : If .env is missing or DB is unreachable, reads the
-                cleaned CSV from data/processed/retail_sales_cleaned.csv
-
-This means the dashboard works even without a running PostgreSQL instance.
+Fallback 1    : Reads the cleaned CSV from data/processed/retail_sales_cleaned.csv
+Fallback 2    : Automatically runs the extraction & transformation on data/raw/retail_sales.csv
 """
 
 import os
+import sys
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
@@ -22,6 +21,11 @@ _DASHBOARD_DIR = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT  = os.path.abspath(os.path.join(_DASHBOARD_DIR, ".."))
 _ENV_PATH      = os.path.join(_PROJECT_ROOT, ".env")
 _CSV_PATH      = os.path.join(_PROJECT_ROOT, "data", "processed", "retail_sales_cleaned.csv")
+
+# Ensure scripts directory is in sys.path for fallback transformations
+_SCRIPTS_DIR = os.path.join(_PROJECT_ROOT, "scripts")
+if _SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPTS_DIR)
 
 load_dotenv(dotenv_path=_ENV_PATH)
 
@@ -58,17 +62,17 @@ def _get_engine():
 
 @st.cache_data(show_spinner="Loading data...", ttl=300)
 def load_all_data() -> pd.DataFrame:
-    """Load the sales dataset from PostgreSQL (if available) or the CSV fallback.
+    """Load the sales dataset from PostgreSQL, cleaned CSV, or on-the-fly ETL.
 
     Strategy:
-        1. If .env exists with all DB variables → try PostgreSQL.
-        2. If the DB connection fails → fall back to the cleaned CSV.
-        3. If .env is missing → go straight to the cleaned CSV.
+        1. If .env exists with DB variables → try PostgreSQL.
+        2. Else if data/processed/retail_sales_cleaned.csv exists → read CSV.
+        3. Else → run transformation module on data/raw/retail_sales.csv on the fly.
 
     Returns:
         pd.DataFrame: The full sales dataset.
     """
-    # ── Try PostgreSQL ───────────────────────────────────────────────────────
+    # ── 1. Try PostgreSQL ───────────────────────────────────────────────────
     if _has_db_config():
         try:
             from sqlalchemy import text
@@ -83,26 +87,36 @@ def load_all_data() -> pd.DataFrame:
         except Exception:
             st.sidebar.warning("DB unavailable — using CSV data")
 
-    # ── Fall back to cleaned CSV ─────────────────────────────────────────────
+    # ── 2. Fall back to cleaned CSV ─────────────────────────────────────────
     if os.path.isfile(_CSV_PATH):
         df = pd.read_csv(_CSV_PATH)
         st.sidebar.info("Data source: cleaned CSV")
         return df
 
-    # ── Nothing available ────────────────────────────────────────────────────
+    # ── 3. On-the-fly transformation fallback ───────────────────────────────
+    try:
+        from extract import extract_data
+        from transform import transform_data, save_cleaned_dataset
+
+        df_raw = extract_data()
+        df_clean = transform_data(df_raw)
+        save_cleaned_dataset(df_clean)
+        st.sidebar.info("Data source: Cleaned on-the-fly")
+        return df_clean
+    except Exception as e:
+        st.error(f"**Data transformation failed:** `{e}`")
+
+    # ── 4. Nothing available ────────────────────────────────────────────────
     st.error(
         "**No data source found.**\n\n"
-        f"Expected the cleaned CSV at:\n`{_CSV_PATH}`\n\n"
-        "Run `python scripts/transform.py` first to generate it."
+        f"Expected raw CSV or cleaned CSV in data/ directory.\n\n"
+        "Please ensure `data/raw/retail_sales.csv` exists in the repository."
     )
     return pd.DataFrame()
 
 
 def run_query(sql: str) -> pd.DataFrame:
-    """Run a raw SQL query against PostgreSQL (PostgreSQL mode only).
-
-    Not called by the dashboard pages — kept here for advanced use.
-    """
+    """Run a raw SQL query against PostgreSQL (PostgreSQL mode only)."""
     try:
         from sqlalchemy import text
         engine = _get_engine()
