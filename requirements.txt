@@ -1,0 +1,19 @@
+# ---------------------------------------------------------------
+# requirements.txt
+# Retail Sales ETL & Analytics Platform
+#
+# All libraries required across all implemented phases.
+# ---------------------------------------------------------------
+
+# Core data processing (Phase 2 - 5)
+pandas          # Data loading, manipulation, and exploration
+numpy           # Numerical operations used in feature engineering
+
+# Database (Phase 6 - 7)
+sqlalchemy      # Python SQL toolkit and ORM for database interactions
+psycopg2-binary # PostgreSQL adapter for Python (binary, no compile needed)
+python-dotenv   # Reads key=value pairs from a .env file into os.environ
+
+# Dashboard (Phase 10)
+streamlit       # Interactive web dashboard framework
+plotly          # Interactive chart library used with Streamlit
