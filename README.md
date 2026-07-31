@@ -433,7 +433,7 @@ python scripts/load.py
 python -m streamlit run dashboard/app.py
 ```
 
-The dashboard opens at **http://localhost:8501**
+The dashboard opens at **retail-sales-data-platform.streamlit.app**
 
 ---
 
