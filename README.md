@@ -493,10 +493,10 @@ Or open individual queries in pgAdmin to run them one by one.
 
 ## Author
 
-**Your Name**
+**Mahima Yadav**
 
-- GitHub: [github.com/your-username](https://github.com/your-username)
-- LinkedIn: [linkedin.com/in/your-profile](https://linkedin.com/in/your-profile)
+- GitHub: [github.com/mahimayadav04](https://github.com/mahimayadav04)
+- LinkedIn: [linkedin.com/in/mahimayadav01](https://www.linkedin.com/in/mahimayadav01/)
 
 ---
 
